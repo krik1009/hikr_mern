@@ -34,8 +34,6 @@ module.exports = [
     description: 'Winter walking and snowshoeing are fantastic ways to appreciate the snowy landscapes at entirely your own pace.Nowadays, many villages, particularly in the Alps, boast large networks of specially prepared winter walking paths and/or designated snowshoeing trails. Neither activity requires any special skill or clothing; the only ‘difficulty’ is choosing which trail to explore! ',
     headerImage: 'https://images.unsplash.com/photo-1522230374146-a459b2d7fde9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80'
   }
-  
-
 
 ]
 

@@ -16,7 +16,7 @@ const HikeCard = ({ name, description, difficulty, country, distance, timeToComp
             <div className="media-content">
               <p className="title is-4 hike-index-title">{name}, {country}</p>
               <p className="is-6">Distance: {distance}</p>
-              <p className="is-6">Difficulty: {difficulty}</p>
+              <p className="is-6">Difficulty: {difficulty[0]}</p>
               <p className="is-6">Time it takes: {timeToComplete}</p>
             </div>
           </div>

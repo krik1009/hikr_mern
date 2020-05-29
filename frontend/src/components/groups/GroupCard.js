@@ -12,9 +12,11 @@ const GroupCard = ({ key, group, members} ) => {
           <div className="column columns is-multiline">
             <div className="column is-full columns is-multiline">
               <h1 className="subtitle column is-full group-title">{group.name}</h1>
-              { members.length > 1 &&
+              { members.length > 1 ?
                 <p className="column is-full"><i className="fas fa-users"></i>
-                &nbsp;{members.length} hikrs</p> 
+                &nbsp;{members.length} hikrs</p>
+                :
+                <p className="column is-full" style={{ fontStyle: "italic", fontSize: 12}}>Be the first participant</p>
               }
               <div>
                 <figure className="column">

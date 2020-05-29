@@ -42,7 +42,7 @@ class GroupEventEdit extends React.Component {
       let obj = {value: '', label: ''}
       obj.value = hike._id
       obj.label = hike.name
-      options.push(obj)
+      return options.push(obj)
     })
     return options
   }
@@ -180,8 +180,20 @@ class GroupEventEdit extends React.Component {
 
               <div className="field">
                 <div className="buttons is-right">
-                <button type='submit' className="button is-light" style={{ minWidth: 100 }}>Update Event</button>
-                  <button className="button is-light" onClick={this.handleClear} style={{ minWidth: 70 }}>Clear</button>
+                  <button 
+                    type='submit' 
+                    className="button is-light" 
+                    style={{ minWidth: 100, backgroundColor: '#e84a5f', color: 'white' }}
+                  >
+                    Update Event
+                  </button>
+                  <button
+                    className="button is-light"
+                    onClick={this.handleClear}
+                    style={{ minWidth: 70 }}
+                  >
+                      Clear
+                  </button>
                 </div>
               </div>
 

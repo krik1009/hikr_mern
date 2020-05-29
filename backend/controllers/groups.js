@@ -9,8 +9,8 @@ async function groupsIndex(req, res, next) {
     const groups = await Group.find()
       .populate('members.user')
       .populate('createdMember')
-      .populate('messages.user')
-      .populate('messages.likes.user')
+      .populate('threads.thread.from')
+      .populate('threads.thread.likes.user')
       .populate('userAddedImages.user')
       .populate('events.hike')
       .populate('events.participants.user')
@@ -30,8 +30,8 @@ async function groupsShow(req, res, next) {
     const group = await Group.findById(groupId)
       .populate('members.user')
       .populate('createdMember')
-      .populate('messages.user')
-      .populate('messages.likes.user')
+      .populate('threads.thread.from')
+      .populate('threads.thread.likes.user')
       .populate('userAddedImages.user')
       .populate('events.hike')
       .populate('events.participants.user')
@@ -68,8 +68,8 @@ async function groupsUpdate(req, res, next) {
     const group = await Group.findById(groupId)
       .populate('members.user')
       .populate('createdMember')
-      .populate('messages.user')
-      .populate('messages.likes.user')
+      .populate('threads.thread.from')
+      .populate('threads.thread.likes.user')
       .populate('userAddedImages.user')
       .populate('events.hike')
       .populate('events.participants.user')
@@ -172,23 +172,24 @@ async function userAddedImageDelete(req, res, next) {
 
 
 
-//* Messages
-// POST
-// URL = api/groups/:id/messages
-async function groupsMessageCreate(req, res, next) {
+//* Threads/Messages
+// POST (new thread)
+// URL = api/groups/:id/threads
+async function groupsThreadCreate(req, res, next) {
   try {
     const groupId = req.params.id
     const group = await Group.findById(groupId)
     if (!group) throw new Error(notFound)
- 
-    req.body.user = req.currentUser
+
     const adminId = group.createdMember._id
-    if (!group.members.some(member => member.user._id.equals(req.body.user._id))
-      && !adminId.equals(req.body.user._id) ) {
+    if (!group.members.some(member => member.user._id.equals(req.currentUser._id))
+      && !adminId.equals(req.currentUser._id) ) {
       throw new Error(unauthorized)
     }
-
-    group.messages.push(req.body)
+    req.body.thread['from'] = req.currentUser
+    group.threads.push(req.body)
+    group
+    
     await group.save()
     res.status(201).json(group)
   } catch (err) {
@@ -196,22 +197,79 @@ async function groupsMessageCreate(req, res, next) {
   }
 }
 
-// DELETE
-// URL = api/groups/:id/messages/:messageId
-async function groupsMessageDelete(req, res, next) {
+// POST (new msg in thread)
+// URL = api/groups/:id/threads/:threadId/messages
+async function groupsMessageCreate(req, res, next) {
   try {
     const groupId = req.params.id
-    const messageId = req.params.messageId
     const group = await Group.findById(groupId)
     if (!group) throw new Error(notFound)
 
-    const messageToRemove = group.messages.id(messageId)
+    const threadId = req.params.threadId
+    const thread = group.threads.id(threadId)
+    if (!thread) throw new Error(notFound)
+ 
+    const adminId = group.createdMember._id
+    if (!group.members.some(member => member.user._id.equals(req.currentUser._id))
+      && !adminId.equals(req.currentUser._id) ) {
+      throw new Error(unauthorized)
+    }
+
+    req.body['from'] = req.currentUser
+    thread.thread.push(req.body)
+
+    await group.save()
+    res.status(201).json(group)
+  } catch (err) {
+    next(err)
+  }
+}
+
+// DELETE (thread)
+// URL = api/groups/:id/threads/:threadId
+async function groupsThreadDelete(req, res, next) {
+  try {
+    const groupId = req.params.id
+    const group = await Group.findById(groupId)
+    if (!group) throw new Error(notFound)
+
+    const threadId = req.params.threadId
+    const threadToRemove = group.threads.id(threadId)
+    if (!threadToRemove) throw new Error(notFound)
+
+    const adminId = group.createdMember._id
+    if (!group.members.some(member => member.user._id.equals(req.currentUser._id))
+      && !adminId.equals(req.currentUser._id) ) {
+      throw new Error(unauthorized)
+    }
+
+    await threadToRemove.remove()
+    await group.save()
+    res.sendStatus(204).json(group)
+  } catch (err) {
+    next(err)
+  }
+}
+
+// DELETE (msg)
+// URL = api/groups/:id/threads/:threadId/messages/:messageId
+async function groupsMessageDelete(req, res, next) {
+  try {
+    const groupId = req.params.id
+    const group = await Group.findById(groupId)
+    if (!group) throw new Error(notFound)
+
+    const threadId = req.params.threadId
+    const thread = group.threads.id(threadId)
+    if (!thread) throw new Error(notFound)
+
+    const messageId = req.params.messageId
+    const messageToRemove = thread.thread.id(messageId)
     if (!messageToRemove) throw new Error(notFound)
 
-    req.body.user = req.currentUser
     const adminId = group.createdMember._id
-    if (!group.members.some(member => member.user._id.equals(req.body.user._id))
-      && !adminId.equals(req.body.user._id) ) {
+    if (!group.members.some(member => member.user._id.equals(req.currentUser._id))
+      && !adminId.equals(req.currentUser._id) ) {
       throw new Error(unauthorized)
     } // only group members or admin can delete msg
 
@@ -223,33 +281,35 @@ async function groupsMessageDelete(req, res, next) {
   }
 }
 
-// PUT (LIKE)
-// URL = api/groups/:id/messages/:messageId/likes
+
+// PUT (LIKE, msg)
+// URL = api/groups/:id/threads/:threadId/messages/:messageId/likes
 async function groupsMessageLike(req, res, next) {
-  console.log(res)
   try {
     const groupId = req.params.id
-    const messageId = req.params.messageId
-    const group = await (await Group.findById(groupId)).populate('messages.likes.user')
+    const group = await Group.findById(groupId)
     if (!group) throw new Error(notFound)
 
-    const messageToLike = group.messages.id(messageId)
+    const threadId = req.params.threadId
+    const thread = group.threads.id(threadId)
+    if (!thread) throw new Error(notFound)
+
+    const messageId = req.params.messageId
+    const messageToLike = thread.thread.id(messageId)
     if (!messageToLike) throw new Error(notFound)
 
     if (messageToLike.likes.length >= 1 && messageToLike.likes.find( like => like.user._id.equals(req.currentUser._id)) ) {
       throw new Error('You have already liked the comment')
-    } 
-   
+    }
+    
     const newLiker = { user: req.currentUser }
     messageToLike.likes.push(newLiker)
 
     await group.save()
-    console.log(group)
     res.status(202).json(group)
   } catch (err) {
     console.log(err)
     next(err)
-
   }
 }
 
@@ -261,7 +321,14 @@ async function groupsEventCreate(req, res, next) {
   try {
     const groupId = req.params.id
     const group = await (await Group.findById(groupId))
-      .populate('events.participants')
+      .populate('members.user')
+      .populate('createdMember')
+      .populate('threads.thread.from')
+      .populate('threads.thread.likes.user')
+      .populate('userAddedImages.user')
+      .populate('events.hike')
+      .populate('events.participants.user')
+      .populate('events.createdMember')
     if (!group) throw new Error(notFound)
 
     if (group.events.some( event =>  event.eventName === req.body.eventName )) throw new Error('Already exist. Try another event name!') //unique event name 
@@ -290,6 +357,14 @@ async function groupsEventShow(req, res, next) {
   try {
     const groupId = req.params.id
     const group = await Group.findById(groupId)
+      .populate('members.user')
+      .populate('createdMember')
+      .populate('threads.thread.from')
+      .populate('threads.thread.likes.user')
+      .populate('userAddedImages.user')
+      .populate('events.hike')
+      .populate('events.participants.user')
+      .populate('events.createdMember')
     if (!group) throw new Error(notFound)
 
     const eventId = req.params.eventId
@@ -359,7 +434,8 @@ async function groupsEventDelete(req, res, next) {
 async function groupsGetEventParticipants(req, res, next) {
   try {
     const groupId = req.params.id
-    const group = await (await Group.findById(groupId)).populate('event.participants.user')
+    const group = await (await Group.findById(groupId))
+      .populate('event.participants.user')
     if (!group) throw new Error(notFound)
 
     const eventId = req.params.eventId
@@ -382,7 +458,8 @@ async function groupsGetEventParticipants(req, res, next) {
 async function groupsEventParticipants(req, res, next) {
   try {
     const groupId = req.params.id
-    const group = await Group.findById(groupId).populate('event.participants.user')
+    const group = await Group.findById(groupId)
+      .populate('event.participants.user')
     if (!group) throw new Error(notFound)
 
     const eventId = req.params.eventId
@@ -456,20 +533,17 @@ async function groupsMemberCreate(req, res, next) {
 // URL = api/groups/:id/members/memberId
 async function groupsMemberDelete(req, res, next) {
   try {
-    console.log(req)
-    // find group
     const groupId = req.params.id
     const group = await Group.findById(groupId)
     if (!group) throw new Error(notFound)
 
-    // delete
     const memberId = req.params.memberId
     const memberToRemove = group.members.id(memberId)
     if (!memberToRemove) throw new Error(notFound)
 
     const adminId = group.createdMember._id
     if (!memberToRemove.user.equals(req.currentUser._id) 
-      && !adminId.equals(req.currentUser._id)) { // admin has right to del msg
+      && !adminId.equals(req.currentUser._id)) {
       throw new Error(unauthorized) 
     }
     
@@ -494,8 +568,10 @@ module.exports = {
   showGroupImage: userAddedImageShow,
   deleteGroupImage: userAddedImageDelete,
 
-  // messages
+  // threads and messages
+  createThread: groupsThreadCreate,
   createMessage: groupsMessageCreate,
+  deleteThread: groupsThreadDelete,
   deleteMessage: groupsMessageDelete,
   likeMessage: groupsMessageLike,
 

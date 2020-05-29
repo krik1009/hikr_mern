@@ -109,37 +109,40 @@ export const getSingleGroup = groupId => {
 }
 
 export const joinGroup = (groupId, userId) => {
-  return axios.post(`/api/groups/${groupId}/members`, userId, withHeaders())
+  return axios.post(`${baseUrl}/groups/${groupId}/members`, userId, withHeaders())
 }
 
 export const leaveGroup = (groupId, userId) => {
-  return axios.delete(`/api/groups/${groupId}/members/${userId}`, withHeaders())
+  return axios.delete(`${baseUrl}/groups/${groupId}/members/${userId}`, withHeaders())
 }
 
 // events
+export const getSingleEvent = (groupId, eventId) => {
+  return axios.get(`${baseUrl}/groups/${groupId}/events/${eventId}`, withHeaders())
+}
+
 export const deleteEvent = (groupId, eventId) => {
-  return axios.delete(`/api/groups/${groupId}/events/${eventId}`, withHeaders())
+  return axios.delete(`${baseUrl}/groups/${groupId}/events/${eventId}`, withHeaders())
 } 
 
-export const joinEvent = (groupId, eventId) => {
-  console.log(eventId)
-  return axios.put(`/api/groups/${groupId}/events/${eventId}/participants`, null, withHeaders())
+export const joinEvent = (groupId, eventId) => { 
+  return axios.put(`${baseUrl}/groups/${groupId}/events/${eventId}/participants`, null, withHeaders())
 }
 
 export const leaveEvent = (groupId, eventId, parId) => {
-  return axios.delete(`/api/groups/${groupId}/events/${eventId}/participants/${parId}`, withHeaders())
+  return axios.delete(`${baseUrl}/groups/${groupId}/events/${eventId}/participants/${parId}`, withHeaders())
 }
 
 // pictures
 export const uploadPic = (groupId, image) => {
-  return axios.post(`/api/groups/${groupId}/user-images`, image, withHeaders())
+  return axios.post(`${baseUrl}/groups/${groupId}/user-images`, image, withHeaders())
 }
 
 export const deletePic = (groupId, imageId) => {
-  return axios.delete(`/api/groups/${groupId}/user-images/${imageId}`, withHeaders())
+  return axios.delete(`${baseUrl}/groups/${groupId}/user-images/${imageId}`, withHeaders())
 }
 
 // chat
 export const sendMsg = (groupId, text) => {
-  return axios.post(`/api/groups/${groupId}/messages`, text, withHeaders())
+  return axios.post(`${baseUrl}/groups/${groupId}/messages`, text, withHeaders())
 }

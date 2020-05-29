@@ -1,34 +1,47 @@
-# sei-group-project-3
-Main repo for SEI Group Project 3
-Andy Bradshaw
-Purvi Trivedi
-Kuriko IWAI
+### Hikr - the hikers' community to curate the hike infomation and related events
+
+## Technologies
+- MERN - Full-stack web app
+
+# Backend
+- Node.js/Express
+- Mongoose
+    - Models/Controllers
+      - User (embedded relationships w Hike - completed hikes, fav hikes, w Group - members)
+      - Group (embedded relationship w)
+      - Hike
+- Mongo.db
+  - Users
+  - Groups
+  - Hikes
+
+# Frontend
+- React/Javascript
+- Bulma/SCSS
 
 
-### Hikr
+## UI/UX
+Common
+- smooth interaction among hike page, group page, and profile page
+- register/login function to protect profile information, add-on functions to register new hikes, or create groups
 
-## Backend 
+Hike
+- 3 different views to search the best hike
+- Detailed information
 
-### Database
+Profile
+- One-stop profile page for all the registered users (can edit the profile on the same page)
 
-- Users
-- Groups
-- Hikes
+Group
+- One-stop-shop for hikers' groups
+- Create and orginize events
+- Chat board available for the group members
 
-## Pages
-<!-- Home - has button in the middle 
-Hike Index - list of filtered 
-Show Hike
-User Profile
-Login/Register
-Group index
-Group Profile -->
 
-### Third party Info
-- Fake users ?
-- Hikes ?
 
-### Models
+####### Reference
+
+(Model details)
 User
 - username
 - email
@@ -63,8 +76,8 @@ Hike
 - user created hike - referenced (to user)
 
 
-### Controllers
 
+(Controller details)
 User 
 - Create user
 - Read SingleUser
@@ -89,8 +102,7 @@ Hikes
 - Add image
 
 
-### Routes
-
+(Routes details)
 /hikes - index page GET/POST
 /hikes/:id - hike show page GET/PUT/DELETE
 /hikes/:id/comments - hike comments page POST

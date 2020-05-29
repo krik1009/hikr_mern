@@ -1,8 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { triggerOutlook } from '../common/Email'
 
-const GroupShowInformation = ({ member, currentlyDisplayed, group, members, photos, events, handleViewChange, sendEmail }) => {
- 
+const GroupShowInformation = ({ member, currentlyDisplayed, group, members, photos, events, handleViewChange }) => {
+
   return (
     <div className="GroupShow container">
       <div className="Information" 
@@ -48,8 +49,7 @@ const GroupShowInformation = ({ member, currentlyDisplayed, group, members, phot
                         <a
                           className="level-item" 
                           aria-label="2.reply"
-                          onClick={() => sendEmail(group.createdMember.email)}
-                          href="null"
+                          onClick={() => triggerOutlook(group.createdMember.email, 'Hi from Hikr.com!')}
                         >
                           <span className="icon is-small">
                             <i className="fas fa-reply" aria-hidden="true"></i>
@@ -98,7 +98,6 @@ const GroupShowInformation = ({ member, currentlyDisplayed, group, members, phot
             <div
               className="container" 
               style={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap"}}>
-              {/* <div className="columns"> */}
               {photos.length >= 1 ?  
                 photos.map( photo => (
                   <figure className="image" key={photo._id}>
@@ -112,10 +111,9 @@ const GroupShowInformation = ({ member, currentlyDisplayed, group, members, phot
                 :
                 <p style={{ fontSize: 15 }}>Coming soon...</p>
               }
-              {/* </div> */}
             </div>
             <div className="buttons is-right">
-              { member && 
+              {member && 
                 <button 
                   className="button is-light"
                   name="pictures"
@@ -134,24 +132,35 @@ const GroupShowInformation = ({ member, currentlyDisplayed, group, members, phot
             <div className="columns is-multiline">
               {events.length >= 1 ?  
                 events.map( event => (
-                  <div 
-                    className="column box" 
-                    style={{ 
-                      maxWidth: 200, 
-                      display: "flex", 
-                      alignItems: "center", 
-                      flexDirection: "column",
-                      margin: 10
-                     }}
-                    key={event._id}
+                  <Link to={{
+                    pathname: `/groups/${group._id}/events/${event._id}`,
+                    state: {
+                      group: group,
+                      event: event,
+                      currentlyDisplayed: currentlyDisplayed
+                    }
+                  }}
                   >
-                    <p><strong>{event.eventName}</strong></p>
-                    <p style={{fontSize: 20}}><i className="fas fa-mountain"></i>&nbsp;{event.hike.name}</p>
-                    <figure className="image is-128x128">
-                      <img src={event.hike.images[0]} alt="img" />
-                    </figure>
-                    <p style={{fontSize: 18}}>On&nbsp;{event.startDate.slice(0, 10)}</p>
-                  </div>
+                    <div 
+                      className="column box" 
+                      style={{ 
+                        width: 200,
+                        height: 250,
+                        display: "flex", 
+                        alignItems: "center", 
+                        flexDirection: "column",
+                        margin: 10
+                      }}
+                      key={event._id}
+                    >
+                      <p><strong>{event.eventName}</strong></p>
+                      <p style={{fontSize: 20}}><i className="fas fa-mountain"></i>&nbsp;{event.hike.name}</p>
+                      <figure className="image is-128x128">
+                        <img src={event.hike.images[0]} alt="img" />
+                      </figure>
+                      <p style={{fontSize: 18}}>On&nbsp;{event.startDate.slice(0, 10)}</p>
+                    </div>
+                  </Link>
                 ))
                 :
                 <p style={{ fontSize: 15 }}>&nbsp;&nbsp;&nbsp;&nbsp;Coming soon...</p>
@@ -170,14 +179,11 @@ const GroupShowInformation = ({ member, currentlyDisplayed, group, members, phot
                 </button>
               }
             </div>
-
           </div>
-          
         </section>
       </div>
     </div>
   )
-
 }
 
 export default GroupShowInformation 

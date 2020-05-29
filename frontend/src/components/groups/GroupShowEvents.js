@@ -1,21 +1,22 @@
 import React from 'react'
 import { getUserId } from '../../lib/auth'
 import { Link } from 'react-router-dom'
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
+import Calendar from 'react-calendar'
+import 'react-calendar/dist/Calendar.css'
+
+import { triggerOutlook } from '../common/Email'
 
 
-const GroupShowEvents = ({ events, group, currentlyDisplayed, handleEventDelete, handleJoinEvent, handleCancelEvent, sendEmail }) => {
+const GroupShowEvents = ({ events, group, currentlyDisplayed, handleEventDelete, handleJoinEvent, handleCancelEvent }) => {
 
   const userId = getUserId()
-
   const isInGroup = (participants) => {
     return participants.some(person => person.user._id === userId)
   }
 
   return (
     <div 
-      className="Event container"    
+      className="Event container"
         style={{ 
           minHeight: 500,
           display: `${currentlyDisplayed === 'events' ? 'block' : 'none' }`,
@@ -27,6 +28,7 @@ const GroupShowEvents = ({ events, group, currentlyDisplayed, handleEventDelete,
       {events.map(item => {
         const numOfPs = item.participants.length
         const participantId = item.participants.find(par => par.user._id === userId)
+
         return(
           <div className="box" key={item._id}>
             {item.createdMember._id === getUserId() && 
@@ -86,8 +88,14 @@ const GroupShowEvents = ({ events, group, currentlyDisplayed, handleEventDelete,
                   Event Host:&nbsp;
                   {item.createdMember.username.replace(item.createdMember.username[0], item.createdMember.username[0].toUpperCase())}
                 </p>
+                <Link to={`/profiles/${item.createdMember._id}`}>
+                  <figure className="image is-rounded is-64x64">
+                    <img className="is-rounded" src={item.createdMember.profileImage} alt={item.createdMember.username} />
+                  </figure>
+                </Link>
+
                 <div className="level-left" style={{ display: "flex"}}>
-                  <Link 
+                  <Link
                     to={`/profiles/${item.createdMember._id}`} 
                     className="level-item bio"
                     style={{ fontSize: 10, color: 'blue', fontFamily: "arial", marginRight: 10}}
@@ -97,20 +105,13 @@ const GroupShowEvents = ({ events, group, currentlyDisplayed, handleEventDelete,
                   <a 
                     className="level-item" 
                     aria-label="2.reply"
-                    onClick={() => sendEmail(item.createdMember.email)}
-                    href="null"
+                    onClick={() => triggerOutlook(item.createdMember.email, `Hi from Hikr.com: Interested in ${item.eventName}`)}
                   >
                     <span className="icon is-small">
                       <i className="fas fa-reply" aria-hidden="true"></i>
                     </span>
                   </a>
                 </div>
-
-                <Link to={`/profiles/${item.createdMember._id}`}>
-                  <figure className="image is-rounded is-64x64">
-                    <img className="is-rounded" src={item.createdMember.profileImage} alt={item.createdMember.username} />
-                  </figure>
-                </Link>
                 <br />
                 {numOfPs > 1 ?
                   <p style={{fontSize: 15, marginBottom: 10}}>{`${numOfPs} members will participate`}</p> 
@@ -144,7 +145,6 @@ const GroupShowEvents = ({ events, group, currentlyDisplayed, handleEventDelete,
                 <div style={{ margin: 20}}>
                   <Calendar
                     value={[new Date(item.startDate), new Date(item.endDate)]}
-                    // showDoubleView={true}
                   />
                 </div>
               </div>

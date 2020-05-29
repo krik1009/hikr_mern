@@ -92,29 +92,26 @@ mongoose.connect(
         })
       }
 
-
       const createdUsers = await User.create(users)
-
       console.log(`${createdUsers.length} Users created`)
+
 
       const hikesWithUsers = hikeData.map(hike => {
         return { ...hike, user: createdUsers[Math.floor(Math.random() * createdUsers.length)]._id }
       })
-
-      // const numberOfMembers = []
-      // numberOfMembers.length = Math.ceil(Math.random() * 20)
-      // for (let i = 0; i < numberOfMembers.length; i++) {
-      //   numberOfMembers[i] = createdUsers[Math.floor(Math.random() * createdUsers.length)]._id
-      // }
-
+      
+      const hikes = await Hike.create(hikesWithUsers)
+      console.log(`${'⛰️'.repeat(hikes.length)} Hikes created`)
 
 
       const groupsWithUsers = groupData.map(group => {
-        return { ...group, createdMember: createdUsers[Math.floor(Math.random() * createdUsers.length)]._id }
+        const createdMember = createdUsers[Math.floor(Math.random() * createdUsers.length)]._id
+        return { 
+          ...group, 
+          createdMember: createdMember,
+          members: { user: createdMember }
+        }
       })
-
-      const hikes = await Hike.create(hikesWithUsers)
-      console.log(`${'⛰️'.repeat(hikes.length)} Hikes created`)
 
       const groups = await Group.create(groupsWithUsers)
       console.log(`${'🙌'.repeat(groups.length)} Groups created`)

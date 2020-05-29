@@ -6,8 +6,7 @@ const users = require('../controllers/users')
 const secureRoute = require('../lib/secureRoute')
 
 
-// * hikes
-
+// * Hikes
 router.route('/hikes')
   .get(hikes.index)
   .post(secureRoute, hikes.create)
@@ -31,7 +30,6 @@ router.route('/hikes/:id/images/:imageId')
 
 
 // * Groups
-
 router.route('/groups')
   .get(groups.index)
   .post(secureRoute, groups.create)
@@ -49,17 +47,24 @@ router.route('/groups/:id/user-images/:userAddedImageId')
   .get(secureRoute, groups.showGroupImage)
   .delete(secureRoute, groups.deleteGroupImage)
 
-// messages
-router.route('/groups/:id/messages')
+// threads
+router.route('/groups/:id/threads')
+  .post(secureRoute, groups.createThread)
+
+router.route('/groups/:id/threads/:threadId')
+  .delete(secureRoute, groups.deleteThread)
+
+// messages (in thread)
+router.route('/groups/:id/threads/:threadId/messages')
   .post(secureRoute, groups.createMessage)
 
-router.route('/groups/:id/messages/:messageId')
+router.route('/groups/:id/threads/:threadId/messages/:messageId')
   .delete(secureRoute, groups.deleteMessage)
 
-router.route('/groups/:id/messages/:messageId/likes')
+router.route('/groups/:id/threads/:threadId/messages/:messageId/likes')
   .put(secureRoute, groups.likeMessage)
 
-  
+
 // events
 router.route('/groups/:id/events')
   .post(secureRoute, groups.createEvent)
@@ -89,7 +94,6 @@ router.route('/groups/:id/members/:memberId')
 
 
 //* auth
-
 router.route('/register')
   .post(auth.register)
 

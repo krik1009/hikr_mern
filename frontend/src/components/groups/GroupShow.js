@@ -8,6 +8,7 @@ import GroupShowPictures from './GroupShowPictures'
 import GroupShowEvents from './GroupShowEvents'
 import GroupShowChat from './GroupShowChat'
 import { getSingleGroup, joinGroup, leaveGroup, deleteEvent, deletePic, uploadPic, joinEvent, leaveEvent} from '../../lib/api'
+import { triggerOutlook } from '../common/Email'
 
 
 class GroupShow extends React.Component {
@@ -20,10 +21,11 @@ class GroupShow extends React.Component {
       text: '',
       user:'',
       to: ''
-    }
+    },
+    replyForm: 'default'
   }
   
-
+  
   // fetch
   getData = async () => {
     try {
@@ -34,7 +36,8 @@ class GroupShow extends React.Component {
       this.setState({ 
         group: res.data,
         member: res.data.members.some(member => member.user._id === userId), 
-        admin: res.data.createdMember._id === userId
+        admin: res.data.createdMember._id === userId,
+        replyForm: 'default'
       })
     } catch (err) {
       console.log(err)
@@ -75,15 +78,8 @@ class GroupShow extends React.Component {
 
 
   // control views
-  handleViewChange = event => {
-    this.setState({ currentlyDisplayed: event.target.name })
-  }
-
-  // send email
-  triggerOutlook = () => {
-    const body = escape(window.document.title + String.fromCharCode(13)+ window.location.href)     
-    const subject = "Take a look at this group from Hikr.com!"
-    window.location.href = "mailto:?body="+body+"&subject="+subject          
+  handleViewChange = e => {
+    this.setState({ currentlyDisplayed: e.target.name })
   }
 
 
@@ -100,10 +96,10 @@ class GroupShow extends React.Component {
     }
   }
 
-  handleJoinEvent = async event => {
+  handleJoinEvent = async e => {
     try {
       const groupId = this.props.match.params.id
-      const eventId = event.target.value
+      const eventId = e.target.value
       await joinEvent(groupId, eventId)
       this.getData()
     } catch (err) {
@@ -123,20 +119,20 @@ class GroupShow extends React.Component {
 
 
   // userAddedImages
-  handleUploadPhoto = async event => {
+  handleUploadPhoto = async e => {
     try {
       const groupId = this.props.match.params.id
-      await uploadPic(groupId, { images: event.target.value, user: getUserId() })
+      await uploadPic(groupId, { images: e.target.value, user: getUserId() })
       this.getData()
     } catch (err) {
       console.log(err)
     }
   }
 
-  handleDeletePhoto = async event => {
+  handleDeletePhoto = async e => {
     try {
       const groupId = this.props.match.params.id
-      const imageId = event.target.value
+      const imageId = e.target.value
       await deletePic(groupId, imageId)
       this.getData()
     } catch (err) {
@@ -146,17 +142,47 @@ class GroupShow extends React.Component {
   
 
   // messages
-  handleMessageChange = event => {
-    const formData = { ...this.state.formData, [event.target.name]: event.target.value }
+  handleReplyForm = e => {
+    const replyForm = e.target.name
+    this.setState({ replyForm })
+  }
+
+  handleMessageChange = e => {
+    const formData = { ...this.state.formData, [e.target.name]: e.target.value }
     this.setState({ formData })
   }
 
-  handleMessageSubmit = async () => {
+  handleMessageSubmit = async (groupId, threadId) => {
+    try {
+      await axios.post(`/api/groups/${groupId}/threads/${threadId}/messages`, {
+        text: this.state.formData.text
+      }, {
+        headers: { Authorization: `Bearer ${getToken()}`}
+      })
+      this.getData()
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  handleMessageDelete = async (groupId, threadId, messageId) => {
+    try {
+      await axios.delete(`/api/groups/${groupId}/threads/${threadId}/messages/${messageId}`, {
+        headers: { Authorization: `Bearer ${getToken()}`}
+      })
+      this.getData()
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+
+  // threads
+  handleThreadSubmit = async () => {
     try {
       const groupId = this.props.match.params.id
-      await axios.post(`/api/groups/${groupId}/messages`, {
-        text: this.state.formData.text,
-        user: getUserId()
+      await axios.post(`/api/groups/${groupId}/threads`, {
+        thread: { text: this.state.formData.text }
       }, {
         headers: { Authorization: `Bearer ${getToken()}`}
       })
@@ -166,18 +192,9 @@ class GroupShow extends React.Component {
     }
   }
 
-  sendEmail = async email => {
-    // const groupId = this.props.match.params.id
-    // const res = await axios.get(`/api/groups/${groupId}`)
-    // const email = res.data.members.filter( member => member.user._id === event.target.value ).email
-    const body = escape(window.document.title + String.fromCharCode(13)+ window.location.href) 
-      const subject = "Hi from Hikr.com!"
-      window.location.href =  "mailto:"+email+"?body="+body+"&subject="+subject    
-  }
-
-  handleMessageDelete = async (groupId, messageId) => {
+  handleThreadDelete = async (groupId, threadId) => {
     try {
-      await axios.delete(`/api/groups/${groupId}/messages/${messageId}`, {
+      await axios.delete(`/api/groups/${groupId}/threads/${threadId}`, {
         headers: { Authorization: `Bearer ${getToken()}`}
       })
       this.getData()
@@ -186,18 +203,18 @@ class GroupShow extends React.Component {
     }
   }
 
-  handleLikes = async (groupId, messageId, likes) => {
+  handleLikes = async (groupId, threadId, messageId, likes) => {
     try {
       const userId = getUserId()
-      if ( likes.length > 0 && likes.find( like => like.user._id === userId)) return
+      if (likes.length > 0 && likes.find( like => like.user._id === userId)) return
 
-      const resUser = await axios.get(`/api/profiles/${userId}`, {
-        headers: { Authorization: `Bearer ${getToken()}`}
-      })
-      await axios.put(`/api/groups/${groupId}/messages/${messageId}/likes`, resUser.data, {
+      await axios.put(`/api/groups/${groupId}/threads/${threadId}/messages/${messageId}/likes`, {
+        user: userId
+      }, {
         headers: { Authorization: `Bearer ${getToken()}`}
       })
       this.getData()
+      
     } catch (err) {
       console.log(err.response)
     }  
@@ -205,8 +222,8 @@ class GroupShow extends React.Component {
 
   
   render() {
-    const { group, member, admin, currentlyDisplayed, formData } = this.state
-    if (!group) return null // not render until group is not null (null--render nothing, !null (second render) -render)
+    const { group, member, admin, currentlyDisplayed, formData, replyForm } = this.state
+    if (!group) return null
 
     return (
       <div className="GroupShow">
@@ -216,10 +233,7 @@ class GroupShow extends React.Component {
               <figure className="image">
                 <img src={group.headerImage} alt={group.name} style={{
                   resizeMode: "cover",
-                  // height: "auto",
-                  // width: "auto",
                   maxHeight: 400
-                  // maxWidth: 600
                 }} />
               </figure>
             </div>
@@ -269,7 +283,7 @@ class GroupShow extends React.Component {
                   {member && 
                     <button
                       className="button is-danger is-light" 
-                      onClick={this.triggerOutlook}
+                      onClick={() => triggerOutlook('', 'Check Hikr.com!')}
                       style={{ fontWeight: 800}}
                     >
                       <i className="fas fa-user-plus"></i>
@@ -304,21 +318,22 @@ class GroupShow extends React.Component {
           member={member}
           currentlyDisplayed={currentlyDisplayed}
           handleViewChange={this.handleViewChange}
-          sendEmail={this.sendEmail}
         />
+
         <GroupShowMembers
-          currentlyDisplayed={currentlyDisplayed} 
           group={group}
-          sendEmail={this.sendEmail}
+          currentlyDisplayed={currentlyDisplayed} 
         />
+
         <GroupShowPictures 
+          member={member}
           currentlyDisplayed={currentlyDisplayed}
           images={group.userAddedImages} 
           name={group.name}
           handleDeletePhoto={this.handleDeletePhoto}
-          member={member}
           handleUploadPhoto={this.handleUploadPhoto}
         />
+
         <GroupShowEvents
           group={group}
           events={group.events}
@@ -326,17 +341,21 @@ class GroupShow extends React.Component {
           handleEventDelete={this.handleEventDelete}
           handleJoinEvent={this.handleJoinEvent}
           handleCancelEvent={this.handleCancelEvent}
-          sendEmail={this.sendEmail}
-         />
+        />
+
         <GroupShowChat
           group={group}
-          messages={group.messages}
+          threads={group.threads}
           text={formData.text}
           currentlyDisplayed={currentlyDisplayed}
+          replyForm={replyForm}
           handleMessageChange={this.handleMessageChange}
+          handleThreadSubmit={this.handleThreadSubmit}
+          handleThreadDelete={this.handleThreadDelete}
+          handleLikes={this.handleLikes}
+          handleReplyForm={this.handleReplyForm}
           handleMessageSubmit={this.handleMessageSubmit}
           handleMessageDelete={this.handleMessageDelete}
-          handleLikes={this.handleLikes}
         />
 
         {member && 
@@ -353,4 +372,5 @@ class GroupShow extends React.Component {
     )
   }
 }
+
 export default GroupShow

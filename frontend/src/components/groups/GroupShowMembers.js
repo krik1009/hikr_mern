@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom'
 import Moment from 'react-moment'
 import 'moment-timezone'
 
-const GroupShowMembers = ({group, currentlyDisplayed, sendEmail}) => {
+import { triggerOutlook } from '../common/Email'
+
+const GroupShowMembers = ({group, currentlyDisplayed}) => {
   return (
       <div className="container"
       style={{ 
@@ -58,8 +60,7 @@ const GroupShowMembers = ({group, currentlyDisplayed, sendEmail}) => {
                   <a 
                     className="level-item" 
                     aria-label="2.reply"
-                    onClick={() => sendEmail(member.user.email)}
-                    href="null"
+                    onClick={() => triggerOutlook(member.user.email, 'Hi from Hikr.com!')}
                   >
                     <span className="icon is-small">
                       <i className="fas fa-reply" aria-hidden="true"></i>

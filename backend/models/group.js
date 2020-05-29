@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 
 const participantSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.ObjectId, ref: 'User', required: true }
+}, {
+  timestamps: true
 })
 
 const eventSchema = new mongoose.Schema({
@@ -22,9 +24,15 @@ const messageLikesSchema = new mongoose.Schema({
 
 const groupMessageSchema = new mongoose.Schema({
   text: { type: String, required: true },
-  user: { type: mongoose.Schema.ObjectId, ref: 'User', required: true },
-  to: { type: String },
+  from: { type: mongoose.Schema.ObjectId, ref: 'User', required: true },
+  to: { type: mongoose.Schema.ObjectId, ref: 'User' },
   likes: [ messageLikesSchema ]
+}, {
+  timestamps: true
+})
+
+const groupThreadSchema = new mongoose.Schema({
+  thread: [ groupMessageSchema ]
 }, {
   timestamps: true
 })
@@ -50,7 +58,7 @@ const groupSchema = new mongoose.Schema({
   headerImage: { type: String, required: true }, 
   description: { type: String, required: true, maxlength: 500 },
   userAddedImages: [ userAddedImageSchema ],
-  messages: [ groupMessageSchema ],
+  threads: [ groupThreadSchema ],
   events: [ eventSchema ]
 }, {
   timestamps: true
