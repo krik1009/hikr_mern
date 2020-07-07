@@ -1,25 +1,41 @@
-### Hikr - the hikers' community to curate the hike infomation and related events
+### Hikers' community with user generated hike infomation
 
-## Technologies
-- MERN - Full-stack web app
+# Technologies
+- MERN Stack web app
 
-# Backend
-- Node.js/Express
-- Mongoose
-    - Models/Controllers
-      - User (embedded relationships w Hike - completed hikes, fav hikes, w Group - members)
-      - Group (embedded relationship w)
-      - Hike
-- Mongo.db
-  - Users
-  - Groups
-  - Hikes
+# Dependancies
+## B/E
+* bcrypt
+* body-parser
+* express
+* faker
+* jsonwebtoken
+* mongo
+* mongoose
+* mongoose-unique-validator
+* nodemon
 
-# Frontend
-- React/Javascript
-- Bulma/SCSS
+## F/E
+* fortawesome
+* axios
+* bulma
+* eslint-plugin-react
+* http-proxy-middleware
+* node-sass
+* react
+* react-calendar
+* react-dom
+* react-html-email
+* react-map-gl
+* react-moment
+* react-rating-stars-component
+* react-responsive-carousel
+* react-router-dom
+* react-scripts"
+* react-select
+* reactjs-popup
 
-
+# Core Components / Functions
 ## UI/UX
 Common
 - smooth interaction among hike page, group page, and profile page
@@ -29,7 +45,7 @@ Hike
 - 3 different views to search the best hike
 - Detailed information
 
-Profile
+User
 - One-stop profile page for all the registered users (can edit the profile on the same page)
 
 Group
@@ -38,61 +54,8 @@ Group
 - Chat board available for the group members
 
 
-
-####### Reference
-
-(Model details)
-User
-- username
-- email
-- password
-- profile image
-- biography
-- completed hikes - embedded
-- favourited hikes - embedded
-(group members, user added images, user created hike)
-
-Group
-- group name
-- group members - referenced (to user)
-- events/meetups - form (add new event - date, time, selection of hikes) - referenced
-- imageHeader - 
-- user added images - embedded
-- group messages - embedded
-
+## Controllers
 Hike
-- name
-- location (lat/long)
-- country
-- description
-- distance
-- difficulty rating - 
-- time to complete
-- images 
-- user added images - referenced (to user)
-- comments - embedded
-- stars out of 5 - embedded
-- approprite seasons
-- user created hike - referenced (to user)
-
-
-
-(Controller details)
-User 
-- Create user
-- Read SingleUser
-- Update
-- Delete
-
-Groups
-- Create Group
-- Read
-- Update
-- Delete
-- comment/messages
-- add new event
-
-Hikes
 - Create 
 - Find by Id
 - Update
@@ -101,22 +64,16 @@ Hikes
 - Add Favourite
 - Add image
 
+User 
+- Create user
+- Read SingleUser
+- Update
+- Delete
 
-(Routes details)
-/hikes - index page GET/POST
-/hikes/:id - hike show page GET/PUT/DELETE
-/hikes/:id/comments - hike comments page POST
-/hikes/:id/comments/:id - delete comment DELETE/PUT
-
-/register - POST
-/login - POST
-
-/groups groups index page GET/POST
-/groups/:id group profile page GET/PUT/DELETE
-/groups/:id/messages - groups messages page POST
-/groups/:id/messages/:id - delete/edit messages DELETE/PUT
-/groups/:id/events index and create events GET/POST    
-/groups/:id/events/:id GET/PUT/DELETE
-
-/profiles  idex of users GET
-/profiles/:username users profile pages GET/POST/PUT/DELETE
+Group
+- Create Group
+- Read
+- Update
+- Delete
+- comment/messages
+- add new event
